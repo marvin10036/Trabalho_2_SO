@@ -30,6 +30,9 @@ class LRU_Page_Table:
             self.__MP_index = new_MP_index
 
     def __init__(self, tamanho_page_table):
+        #diferente da implementacao da fifo, registers aqui seria a estrutura
+        #auxiliar já, e o atributo PT_index ajuda a encontrar a posicao real em
+        #uma lista hipoteticamente ordenada
         self.registers = []
 
         for i in range(tamanho_page_table):
@@ -39,8 +42,13 @@ class LRU_Page_Table:
         #self.len_registers = len(self.registers)
         #self.least_recently_used_pointer = 0
 
-    def insert(self, registry):
-        self.registers.append(registry)
+    def allocate_in_MP(self, registry, MP_index):
+        registry.MP_index = MP_index
+        registry.presente_ausente = True
+
+    def deallocate_from_MP(self, registry):
+        registry.MP_index = None
+        registry.presente_ausente = False
 
     def remove_least_recently_used(self):
         #atencao algoritmo O(N), dava pra fzr melhor com um ponteiro, mas mt complexo
@@ -49,10 +57,9 @@ class LRU_Page_Table:
                 registro_lru = register
                 break
 
-        registro_lru.presente_ausente = False
-
         MP_index_to_remove = registro_lru.MP_index
-        registro_lru.MP_index = None
+
+        self.deallocate_from_MP(registro_lru)
 
         return MP_index_to_remove
 
@@ -61,9 +68,8 @@ class LRU_Page_Table:
         aux_registry = registry
 
         self.registers.remove(registry)
-        self.insert(aux_registry)
+        self.registers.append(aux_registry)
 
-    #primeiro a ser chamado
     def search(self, element_PT_index):
         #atencao algoritmo O(N) a seguir
         for register in self.registers:
@@ -71,10 +77,10 @@ class LRU_Page_Table:
                 return register
 
 
-def LRU (pages_number, Input_List, MP, max_page_frames):
+def LRU (max_pages, Input_List, MP, max_page_frames):
     page_faults_counter = 0
 
-    LRU_pt = LRU_Page_Table(pages_number)
+    LRU_pt = LRU_Page_Table(max_pages)
     for page_table_index in Input_List:
         registro_page_table = LRU_pt.search(page_table_index)
 
@@ -83,14 +89,15 @@ def LRU (pages_number, Input_List, MP, max_page_frames):
         else:
             page_faults_counter += 1
 
-            #tira da PT, tira da MP antes de inserir outro
+            #nesse caso tem que trocar MP_index com o least_recently_used
             if len(MP) == max_page_frames:
                 least_recently_used_MP_index = LRU_pt.remove_least_recently_used()
-                MP.pop(least_recently_used_MP_index)
+                LRU_pt.allocate_in_MP(registro_page_table,
+                                      least_recently_used_MP_index)
+            else:
+                MP.append(True)
+                LRU_pt.allocate_in_MP(registro_page_table, len(MP) - 1)
 
-            MP.append(True)
-            registro_page_table.MP_index = len(MP) - 1
-            registro_page_table.presente_ausente = True
             LRU_pt.update(registro_page_table)
 
     return page_faults_counter
