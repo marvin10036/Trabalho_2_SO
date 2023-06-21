@@ -3,6 +3,7 @@ from gerando_listas import generate_input_list_random, generate_input_list_with_
 from LRU import LRU
 from NRU import NRU
 from FIFO import FIFO
+from segunda_chance_relogio import second_chance_with_clock
 
 max_page_frames = int(input("Escreva o número de quadros (page frames): ")) #10
 max_page_table_size = int(input("Escreva o número de paginas na tabela de paginas: ")) #100
@@ -13,16 +14,10 @@ Input_List = generate_input_list_with_repetition(input_list_size, max_page_table
 
 #MP é a mesma não importando o algoritmo
 #vou usar apenas append para manipular, não é pra haver espaços vazios entre entradas
-MP = []
 
-###main, page_number, Input_List, MP, max_page_frames
+print("Número page faults com NRU: " + str(NRU([], max_page_frames, Input_List)))
+print("Número page faults com LRU: " + str(LRU(max_page_table_size, Input_List, [], max_page_frames)))
+print("Número page faults com FIFO: " + str(FIFO(max_page_table_size, Input_List, [], max_page_frames)))
+print("Número page faults com segunda chance/relógio: " + str(second_chance_with_clock(max_page_frames, Input_List)))
 
-page_faults = LRU(max_page_table_size, Input_List, MP, max_page_frames)
-print(page_faults)
-print(NRU([], max_page_frames, Input_List))
-
-
-#MP = []
-#page_faults = FIFO(max_pages, Input_List, MP, max_page_frames)
-#print(page_faults)
 
