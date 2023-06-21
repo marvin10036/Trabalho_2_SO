@@ -13,6 +13,7 @@ def NRU(mp: [], max_page_frames, inputList: []):
     for page_number in inputList:
         if num_entradas == max_page_frames:
             clear_reference(mp)
+            num_entradas = 0
         num_entradas += 1
         if reference_page(mp, page_number):
             pass
@@ -23,7 +24,7 @@ def NRU(mp: [], max_page_frames, inputList: []):
             else:
                 mp.remove(select_victim_page(mp))
                 mp.append(Page(page_number))
-        return page_faults_counter
+    return page_faults_counter
 
 
 def reference_page(pages: [Page], page_number):
